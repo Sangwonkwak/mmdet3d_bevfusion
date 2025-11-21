@@ -3,7 +3,36 @@ import argparse
 import os
 import os.path as osp
 
+import torch
+import numpy as np
+from torch.serialization import add_safe_globals
+
+from mmengine.logging.history_buffer import HistoryBuffer
 from mmengine.config import Config, ConfigDict, DictAction
+
+# ---- torch.load / pickle 안전 관련 패치 ----
+# PyTorch 2.6+ 에서 weights_only=True 기본값 때문에
+# mmengine의 HistoryBuffer, ConfigDict, numpy reconstruct 등이 막히는 문제를 우회
+
+# 1) pickle 에서 허용할 글로벌 클래스 등록
+add_safe_globals([
+    HistoryBuffer,
+    ConfigDict,
+    np.core.multiarray._reconstruct,
+])
+
+# 2) 기본적으로 weights_only=False 로 동작하게 패치
+_orig_torch_load = torch.load
+
+def _patched_torch_load(*args, **kwargs):
+    # 사용자가 직접 weights_only를 지정한 경우는 그대로 두고,
+    # 지정 안 했으면 False로 강제
+    kwargs.setdefault('weights_only', False)
+    return _orig_torch_load(*args, **kwargs)
+
+torch.load = _patched_torch_load
+# ---- 여기까지 패치 ----
+
 from mmengine.registry import RUNNERS
 from mmengine.runner import Runner
 

@@ -1097,4 +1097,6 @@ class Det3DLocalVisualizer(DetLocalVisualizer):
                 mmcv.imwrite(drawn_img[..., ::-1],
                              out_file[:-4] + '_2d' + out_file[-4:])
         else:
+            if drawn_img_3d is None:
+                return
             self.add_image(name, drawn_img_3d, step)

@@ -14,7 +14,15 @@ class_names = [
     'motorcycle', 'bicycle', 'pedestrian', 'traffic_cone'
 ]
 
-metainfo = dict(classes=class_names)
+# metainfo = dict(classes=class_names)
+metainfo = dict(
+    classes=class_names,
+    dataset='nuscenes',
+    version='v1.0-mini',
+    info_version='1.1',
+    categories={name: i for i, name in enumerate(class_names)}
+)
+
 dataset_type = 'NuScenesDataset'
 data_root = 'data/nuscenes/'
 data_prefix = dict(
